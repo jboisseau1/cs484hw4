@@ -24,25 +24,27 @@ user_similarities = cosine_similarity(centered_movie_matrix.values)
 
 import numpy as np
 K=5
-centered_movie_matrix = centered_movie_matrix.reset_index()
+# centered_movie_matrix = centered_movie_matrix.reset_index()
 movie_matrix = movie_matrix.reset_index()
+results = []
 for i, test_row in test_set.iterrows():
     test_userID = test_row['userID']
     test_movieID = test_row['movieID']
+    sim_index = movie_matrix.loc[movie_matrix['userID'] == test_userID].index[0]
+    print(test_userID)
+    user_sim = user_similarities[sim_index]
+    N = np.sort(user_sim)[::-1]
+    KNN_ratings = []
+    for NN_index in np.argsort(N):
+        if(len(KNN_ratings)<K):
+            if(not np.isnan(movie_matrix.iloc[NN_index][test_movieID])):
+                KNN_ratings.append(movie_matrix.iloc[NN_index][test_movieID])
+        else:
+            break
+    unknown_user_rating = sum(KNN_ratings) / len(KNN_ratings)
+    results.append(unknown_user_rating)
 
-    for index, cmm_row in centered_movie_matrix.iterrows():
-        N = np.sort(user_similarities[index])[::-1]
-        KNN_ratings = []
-        for NN_index in np.argsort(N):
-            if(len(KNN_ratings)<K):
-                if(not np.isnan(movie_matrix.iloc[NN_index][test_movieID])):
-                    KNN_ratings.append(movie_matrix.iloc[NN_index][test_movieID])
-            else:
-                break
-        print(len(KNN_ratings))
-        unknown_user_rating = sum(KNN_ratings) / len(KNN_ratings)
-        print('***', unknown_user_rating )
-
+print(results)
 
 
 
