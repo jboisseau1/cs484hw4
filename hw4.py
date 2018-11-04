@@ -13,20 +13,43 @@ training_set = pd.read_csv('additional_files/train.dat',delim_whitespace=True)
 ratings = pd.DataFrame(training_set.groupby('movieID')['rating'].mean())
 ratings['number_of_ratings'] = training_set.groupby('movieID')['rating'].count()
 
-
-import matplotlib.pyplot as plt
-
-# ratings['rating'].hist(bins=60)
-
-import seaborn as sns
-sns.jointplot(x='rating', y='number_of_ratings', data=ratings)
+test_set = pd.read_csv('1540226926_0229266_test.dat',delim_whitespace=True)
 
 movie_matrix = training_set.pivot_table(index='userID', columns='movieID', values='rating')
-# print(ratings.sort_values('number_of_ratings', ascending=False).head(10))
-# plt.show()
+centered_movie_matrix = movie_matrix.subtract(movie_matrix.mean()).fillna(0)
 
-test = movie_matrix[653]
-print(movie_matrix.corrwith(test))
+
+from sklearn.metrics.pairwise import cosine_similarity
+user_similarities = cosine_similarity(centered_movie_matrix.values)
+
+import numpy as np
+K=5
+centered_movie_matrix = centered_movie_matrix.reset_index()
+movie_matrix = movie_matrix.reset_index()
+for i, test_row in test_set.iterrows():
+    test_userID = test_row['userID']
+    test_movieID = test_row['movieID']
+
+    for index, cmm_row in centered_movie_matrix.iterrows():
+        N = np.sort(user_similarities[index])[::-1]
+        KNN_ratings = []
+        for NN_index in np.argsort(N):
+            if(len(KNN_ratings)<K):
+                if(not np.isnan(movie_matrix.iloc[NN_index][test_movieID])):
+                    KNN_ratings.append(movie_matrix.iloc[NN_index][test_movieID])
+            else:
+                break
+        print(len(KNN_ratings))
+        unknown_user_rating = sum(KNN_ratings) / len(KNN_ratings)
+        print('***', unknown_user_rating )
+
+
+
+
+
+
+
+
 
 
 # source: https://towardsdatascience.com/how-to-build-a-simple-recommender-system-in-python-375093c3fb7d
