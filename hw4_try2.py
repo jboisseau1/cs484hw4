@@ -17,7 +17,7 @@ test_set = pd.read_csv('1540226926_0229266_test.dat',delim_whitespace=True)
 class customRecommender(SymmetricAlgo):
     def __init__(self):
         SymmetricAlgo.__init__(self)
-        self.k = 40
+        self.k = 21
         self.min_k = 1
 
     def fit(self, trainset):
@@ -47,10 +47,6 @@ class customRecommender(SymmetricAlgo):
         unknown_user_rating = total_ratings / total_similarity
 
         return unknown_user_rating
-
-
-
-
 
 recommender = customRecommender()
 reader = Reader(rating_scale=(0, 5)) # sets min and max of rating system
